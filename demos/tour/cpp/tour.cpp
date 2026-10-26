@@ -81,15 +81,15 @@ int main() {
   section("1. Making colors");
 
   // Most channels go from 0 to 1, and hue is in degrees (0 to 360), as in CSS.
-  auto orange = Color::fromList(Space::srgb, list({1.0, 0.5, 0.0}));
+  auto orange = Color::fromList(Space::srgb(), list({1.0, 0.5, 0.0}));
   show("orange", orange);
 
   // A Color holds any number of colors, one per row, channels back to back.
-  auto pair = Color::fromList(Space::oklch, list({0.7, 0.1, 144.0, 0.5, 0.2, 288.0}));
+  auto pair = Color::fromList(Space::oklch(), list({0.7, 0.1, 144.0, 0.5, 0.2, 288.0}));
   show("two OkLCh colors", pair);
 
   // Alpha (opacity, 0 to 1) goes after each row's channels.
-  auto seeThrough = Color::fromListWithAlpha(Space::srgb, list({1.0, 0.0, 0.0, 0.5, 0.0, 0.0, 1.0, 0.25}));
+  auto seeThrough = Color::fromListWithAlpha(Space::srgb(), list({1.0, 0.0, 0.0, 0.5, 0.0, 0.0, 1.0, 0.25}));
   show("red and blue, see-through", seeThrough);
   show("orange at 80%", orange->withAlpha(list({0.8})));
 
@@ -125,9 +125,9 @@ int main() {
   section("2. Spaces and converting");
 
   std::vector<std::shared_ptr<Space>> spaces = {
-      Space::srgb,        Space::srgbLinear, Space::hsl,         Space::hsv,    Space::hwb,
-      Space::oklab,       Space::oklch,      Space::displayP3,   Space::a98Rgb, Space::prophotoRgb,
-      Space::rec2020,     Space::xyzD65,     Space::xyzD50,      Space::lab,    Space::lch,
+      Space::srgb(),    Space::srgbLinear(), Space::hsl(),       Space::hsv(),    Space::hwb(),
+      Space::oklab(),   Space::oklch(),      Space::displayP3(), Space::a98Rgb(), Space::prophotoRgb(),
+      Space::rec2020(), Space::xyzD65(),     Space::xyzD50(),    Space::lab(),    Space::lch(),
   };
 
   // Each space converts through its parent, up to linear sRGB at the root.
@@ -168,21 +168,21 @@ int main() {
 
   // Display P3's red is redder than any sRGB color: as sRGB, it's out of the
   // 0-to-1 range.
-  auto p3Red = Color::fromList(Space::displayP3, list({1.0, 0.0, 0.0}));  // snippet: gamut
-  auto inSrgb = p3Red->inGamut(Space::srgb);  // snippet: gamut
-  auto inP3 = p3Red->inGamut(Space::displayP3);  // snippet: gamut
+  auto p3Red = Color::fromList(Space::displayP3(), list({1.0, 0.0, 0.0}));  // snippet: gamut
+  auto inSrgb = p3Red->inGamut(Space::srgb());  // snippet: gamut
+  auto inP3 = p3Red->inGamut(Space::displayP3());  // snippet: gamut
   std::cout << "P3 red in sRGB? " << yes((*inSrgb)[0]) << "; in P3? " << yes((*inP3)[0]) << "\n";
-  show("P3 red as sRGB", p3Red->toSpace(Space::srgb));
+  show("P3 red as sRGB", p3Red->toSpace(Space::srgb()));
 
   // To show a color like this vivid blue on an sRGB screen, either map it into
   // the gamut as CSS does, keeping lightness and hue and reducing chroma, or
   // clip each channel, which can change lightness and hue too.
-  auto vivid = Color::fromList(Space::oklch, list({0.6, 0.35, 270.0}));  // snippet: snap, edges
-  auto mapped = vivid->toGamut(Space::srgb);  // snippet: snap
-  auto clipped = vivid->toGamutClipped(Space::srgb);
+  auto vivid = Color::fromList(Space::oklch(), list({0.6, 0.35, 270.0}));  // snippet: snap, edges
+  auto mapped = vivid->toGamut(Space::srgb());  // snippet: snap
+  auto clipped = vivid->toGamutClipped(Space::srgb());
   show("vivid blue", vivid);
-  show("mapped, in OkLCh", mapped->toSpace(Space::oklch));
-  show("clipped, in OkLCh", clipped->toSpace(Space::oklch));
+  show("mapped, in OkLCh", mapped->toSpace(Space::oklch()));
+  show("clipped, in OkLCh", clipped->toSpace(Space::oklch()));
 
   // deltaEOK measures how different two colors look: under about 0.02 is hard
   // to see.
@@ -190,9 +190,9 @@ int main() {
 
   // The most chroma vivid blue's lightness and hue can have in sRGB, and the
   // color lowered to it, keeping lightness and hue exactly.
-  auto most = vivid->maxChroma(Space::srgb);  // snippet: edges
+  auto most = vivid->maxChroma(Space::srgb());  // snippet: edges
   std::cout << "max chroma in sRGB: " << num((*most)[0]) << "\n";
-  auto fitted = vivid->fitChroma(Space::srgb);  // snippet: snap
+  auto fitted = vivid->fitChroma(Space::srgb());  // snippet: snap
   show("fitted, in OkLCh", fitted);
 
   section("5. Mixing and gradients");
@@ -200,22 +200,22 @@ int main() {
   auto red = Color::parse("red");
   auto blue = Color::parse("blue");
   // Oklab mixes look even; sRGB mixes go dull in the middle.
-  std::cout << "halfway in oklab: " << (*red->mix(blue, 0.5, Space::oklab)->toHex())[0] << "\n";
-  std::cout << "halfway in srgb: " << (*red->mix(blue, 0.5, Space::srgb)->toHex())[0] << "\n";
+  std::cout << "halfway in oklab: " << (*red->mix(blue, 0.5, Space::oklab())->toHex())[0] << "\n";
+  std::cout << "halfway in srgb: " << (*red->mix(blue, 0.5, Space::srgb())->toHex())[0] << "\n";
 
   // In a space with hue, choose which way around the hue wheel to go.
-  for (auto const &hue : {HueMethod::shorter, HueMethod::longer, HueMethod::increasing, HueMethod::decreasing}) {
+  for (auto const &hue : {HueMethod::shorter(), HueMethod::longer(), HueMethod::increasing(), HueMethod::decreasing()}) {
     std::cout << "halfway in oklch, " << hue->get_name() << ": "
-              << (*red->mixHue(blue, 0.5, Space::oklch, hue)->toHex())[0] << "\n";
+              << (*red->mixHue(blue, 0.5, Space::oklch(), hue)->toHex())[0] << "\n";
   }
 
   // Alpha mixes too, premultiplied as in CSS.
-  show("see-through mix", seeThrough->mix(orange, 0.5, Space::oklab));
+  show("see-through mix", seeThrough->mix(orange, 0.5, Space::oklab()));
 
   // Gradients run through all rows as stops.
-  auto stops = Color::fromList(Space::srgb, list({1.0, 0.0, 0.0, 0.0, 0.0, 1.0}));
-  std::cout << "gradient: " << join(*stops->gradient(5, Space::oklab)->toHex(), " ") << "\n";
-  std::cout << "long way: " << join(*stops->gradientHue(5, Space::oklch, HueMethod::longer)->toHex(), " ") << "\n";
+  auto stops = Color::fromList(Space::srgb(), list({1.0, 0.0, 0.0, 0.0, 0.0, 1.0}));
+  std::cout << "gradient: " << join(*stops->gradient(5, Space::oklab())->toHex(), " ") << "\n";
+  std::cout << "long way: " << join(*stops->gradientHue(5, Space::oklch(), HueMethod::longer())->toHex(), " ") << "\n";
 
   section("6. Adjusting");
 
@@ -244,7 +244,7 @@ int main() {
   std::cout << "against white " << nums(*ratios) << "\n";
 
   // The lightest steelblue that white text can sit on, at 4.5 or more.
-  auto shade = steel->fitContrast(white, 4.5, Space::srgb);  // snippet: shades
+  auto shade = steel->fitContrast(white, 4.5, Space::srgb());  // snippet: shades
   std::cout << "steelblue for white text " << (*shade->toHex())[0] << ", " << num((*shade->contrast(white))[0]) << "\n";
 
   section("8. Channels as lists");
