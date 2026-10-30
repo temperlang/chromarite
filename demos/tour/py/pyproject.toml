@@ -2,7 +2,9 @@
 name = "chromarite-tour"
 version = "0.0.0"
 requires-python = ">=3.11"
-dependencies = ["chromarite"]
+# Temper's runtime is listed too, so uv takes it from temper.out/ by the
+# sources below, rather than an older release from PyPI.
+dependencies = ["chromarite", "temper-core", "temper-std"]
 
 [tool.uv]
 package = false
