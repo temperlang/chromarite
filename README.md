@@ -116,3 +116,7 @@ code they cover.
 [CssColor4]: https://www.w3.org/TR/css-color-4/
 [CssColor5]: https://www.w3.org/TR/css-color-5/
 [Temper]: https://temperlang.dev/
+
+## License
+
+Apache-2.0 OR MIT, at your option, as Temper is; see [COPYRIGHT](COPYRIGHT). Third-party material, with its notices, is in [NOTICE](NOTICE).
