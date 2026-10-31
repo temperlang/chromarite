@@ -49,9 +49,6 @@ fn section(title: &str) {
 }
 
 fn main() -> Result<()> {
-    // Sets up Chromarite's constants. Call it once before anything else.
-    chromarite::init(None)?;
-
     println!("# Chromarite tour");
 
     section("1. Making colors");

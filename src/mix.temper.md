@@ -17,6 +17,7 @@ The methods are on `Color`: `mix`, `mixHue`, `gradient` and `gradientHue`.
 
 Which way around the hue wheel to go, when blending in a space with hue.
 
+    @auto("==")
     export class HueMethod {
       public name: String;
 
@@ -27,9 +28,6 @@ The constructor is private: blending handles exactly the methods below.
       }
 
       public toString(): String { name }
-
-      @operator("==")
-      public eq(other: HueMethod): Boolean { name == other.name }
 
 The shorter way, the default.
 
