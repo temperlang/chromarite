@@ -1,0 +1,57 @@
+# What each attempt in demos/immutable does today: refused, or changed.
+# Each "changed" waits on a fix in Temper's translation for that language,
+# which should flip it to "refused".
+
+cpp     alpha-list      changed  # lists are shared, writable vectors
+cpp     channel-list    changed  # lists are shared, writable vectors
+cpp     color-field     changed  # fields are public data members
+cpp     hue-static      refused
+cpp     space-field     changed  # fields are public, even on statics
+cpp     space-static    refused
+
+csharp  alpha-list      refused
+csharp  channel-cast    refused
+csharp  channel-list    refused
+csharp  color-field     refused
+csharp  hue-static      refused
+csharp  space-field     refused
+csharp  space-static    refused
+
+java    alpha-list      refused
+java    channel-list    refused
+java    color-field     refused
+java    hue-static      refused
+java    space-field     refused
+java    space-static    refused
+
+js      alpha-list      refused
+js      channel-list    refused
+js      color-define    changed  # instances aren't frozen
+js      color-field     refused
+js      color-setattr   refused
+js      hue-static      refused
+js      space-field     refused
+js      space-static    refused
+
+lua     alpha-list      changed  # lists are plain, shared tables
+lua     channel-list    changed  # lists are plain, shared tables
+lua     color-field     changed  # a write shadows the getter
+lua     hue-static      changed  # statics are plain table fields
+lua     pairs-field     changed  # private fields are plain table fields
+lua     space-field     changed  # a write shadows the getter
+lua     space-static    changed  # statics are plain table fields
+
+py      alpha-list      refused
+py      channel-list    refused
+py      color-field     refused
+py      color-setattr   refused
+py      hue-static      changed  # statics are plain class attributes
+py      space-field     refused
+py      space-static    changed  # statics are plain class attributes
+
+rust    alpha-list      refused
+rust    channel-list    refused
+rust    color-field     refused
+rust    hue-static      refused
+rust    space-field     refused
+rust    space-static    refused

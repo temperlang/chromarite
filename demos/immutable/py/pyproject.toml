@@ -1,0 +1,16 @@
+[project]
+name = "chromarite-immutable"
+version = "0.0.0"
+requires-python = ">=3.11"
+# Temper's runtime is listed too, so uv takes it from temper.out/ by the
+# sources below, rather than an older release from PyPI.
+dependencies = ["chromarite", "temper-core", "temper-std"]
+
+[tool.uv]
+package = false
+
+# The libraries `temper build` generates at the repo's top.
+[tool.uv.sources]
+chromarite = { path = "../../../temper.out/py/chromarite", editable = true }
+temper-core = { path = "../../../temper.out/py/temper-core", editable = true }
+temper-std = { path = "../../../temper.out/py/std", editable = true }

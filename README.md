@@ -54,9 +54,18 @@ Working now:
 Also: a [tour](demos/README.md) of the whole API in each language, with
 identical output, and a [site](site/) to try colors in the browser.
 
+Colors, spaces, and hue methods are meant to be immutable in every language,
+and a [check](demos/README.md#immutability) tries to change them from each.
+Known gaps, waiting on fixes in Temper's translations: C++ and Lua let fields
+and returned lists be changed, Lua and Python let statics like `Space.srgb`
+be reassigned, and JavaScript's `Object.defineProperty` can hide a color's
+`space`.
+
 Planned:
 
 - Running more languages directly on the demo site
+- Tests that colors can't be changed in any language, once Temper's
+  C++ and Lua translations keep fields read-only
 - Later: NumPy arrays for Python, CSS relative color syntax, and more color
   difference formulas
 

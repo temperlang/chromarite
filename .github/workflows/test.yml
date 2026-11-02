@@ -68,3 +68,8 @@ jobs:
         uses: astral-sh/setup-uv@v6
       - name: Tour
         run: python3 demos/run.py ${{ matrix.backend }}
+
+      # Chromarite's values must stay unchanged however each language tries,
+      # except for the known leaks in demos/immutable/expected.txt.
+      - name: Immutability
+        run: python3 demos/immutable/run.py ${{ matrix.backend }}

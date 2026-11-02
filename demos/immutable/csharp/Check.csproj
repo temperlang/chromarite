@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net6.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <RollForward>Major</RollForward>
+    <!-- run.py writes one attempt at a time to build/Check.cs. -->
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="build/Check.cs" />
+    <!-- Built by `temper build -b csharp` at the repo's top. -->
+    <ProjectReference Include="../../../temper.out/csharp/chromarite/src/Chromarite.csproj" />
+  </ItemGroup>
+</Project>

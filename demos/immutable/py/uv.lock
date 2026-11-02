@@ -1,0 +1,51 @@
+version = 1
+revision = 3
+requires-python = ">=3.11"
+
+[[package]]
+name = "chromarite"
+version = "0.0.1"
+source = { editable = "../../../temper.out/py/chromarite" }
+dependencies = [
+    { name = "temper-core" },
+    { name = "temper-std" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "temper-core", specifier = "==0.6.0" },
+    { name = "temper-std", specifier = "==0.6.0" },
+]
+
+[[package]]
+name = "chromarite-immutable"
+version = "0.0.0"
+source = { virtual = "." }
+dependencies = [
+    { name = "chromarite" },
+    { name = "temper-core" },
+    { name = "temper-std" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "chromarite", editable = "../../../temper.out/py/chromarite" },
+    { name = "temper-core", editable = "../../../temper.out/py/temper-core" },
+    { name = "temper-std", editable = "../../../temper.out/py/std" },
+]
+
+[[package]]
+name = "temper-core"
+version = "0.6.0"
+source = { editable = "../../../temper.out/py/temper-core" }
+
+[[package]]
+name = "temper-std"
+version = "0.6.0"
+source = { editable = "../../../temper.out/py/std" }
+dependencies = [
+    { name = "temper-core" },
+]
+
+[package.metadata]
+requires-dist = [{ name = "temper-core", specifier = "==0.6.0" }]

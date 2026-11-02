@@ -1,0 +1,15 @@
+[package]
+name = "check"
+version = "0.0.0"
+edition = "2021"
+publish = false
+autobins = false
+
+# run.py writes one attempt at a time to build/check.rs.
+[[bin]]
+name = "check"
+path = "build/check.rs"
+
+[dependencies]
+# Built by `temper build` at the repo's top.
+chromarite = { path = "../../../temper.out/rust/chromarite" }

@@ -42,3 +42,26 @@ the page. Each snippet is its marked lines, in order, and must exist in
 every tour; `site/build.py` collects them and fails if one is missing. Keep
 marked lines plain statements, like `fitted = vivid.fit_chroma(Space.srgb)`,
 so they read well on their own.
+
+## Immutability
+
+Chromarite's colors, spaces, and hue methods can't be changed once made, but
+that's up to each language's translation. `immutable/` checks it from each
+language, with one small program per language that tries changes the
+natural way: setting a field or property, reassigning a static like
+`Space.srgb`, writing to a list a getter returned, and, where the language
+allows, reflection, such as `setattr` in Python, `Object.defineProperty` in
+JavaScript, or `pairs` in Lua.
+
+Each change is a line ending in a comment like `// attempt: space-static`.
+For every attempt, the runner builds and runs the program with just that
+line. In C++, C#, Java, and Rust, most should fail to compile. Elsewhere,
+they should throw, or leave the value as it was:
+
+    uv run demos/immutable/run.py [LANGUAGE ...]
+
+It uses the same toolchains as the tour, against the same `temper.out/`, and
+compares what happened with `immutable/expected.txt`. A few changes
+currently go through, marked `changed` there with the reason. Each is
+waiting on a fix in Temper's translation, after which its line flips to
+`refused`. Any other change that goes through fails the check.
