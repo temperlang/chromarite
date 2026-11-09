@@ -41,7 +41,9 @@ std::string nums(std::vector<double> const &values) {
   return out + "]";
 }
 
-std::string join(std::vector<std::string> const &strings, std::string const &sep) {
+// Chromarite's lists of strings hold Temper's strings, temper::core::Str,
+// which convert to and from std::string.
+std::string join(std::vector<temper::core::Str> const &strings, std::string const &sep) {
   std::string out;
   for (size_t i = 0; i < strings.size(); i++) {
     out += (i ? sep : "") + strings[i];
@@ -154,7 +156,7 @@ int main() {
     std::cout << "css " << join(*css, ", ") << "\n";
     // Keep the returned list alive while looping over it.
     auto rgbInts = color->toRgbInts();
-    std::vector<std::string> ints;
+    std::vector<temper::core::Str> ints;
     for (int32_t n : *rgbInts) {
       ints.push_back(hex6(n));
     }
