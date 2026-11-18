@@ -75,24 +75,20 @@ For HSL, HSV and HWB, mapping and clamping happen in sRGB, which keeps them
 consistent with the sRGB gamut, where CSS's sample code would clamp the
 HSL or HWB channels themselves.
 
-Null narrowing doesn't yet survive an early return in Temper, so this uses
-if/else.
-
     let mapToGamut(color: Color, space: Space): Matrix throws Bubble {
       let gamut = gamutOf(space);
       if (gamut == null) {
-        convertRows(rowsOf(color), color.space, space)
-      } else {
-        let lch = rowsOf(color.toSpace(Space.oklch));
-        let builder = new ListBuilder<Float64>();
-        for (var i = 0; i < color.length; i += 1) {
-          let mapped = mapRow(lch[i, 0], lch[i, 1], lch[i, 2], gamut);
-          builder.add(mapped.at(0));
-          builder.add(mapped.at(1));
-          builder.add(mapped.at(2));
-        }
-        convertRows(new Matrix(3, builder.toList()), gamut, space)
+        return convertRows(rowsOf(color), color.space, space);
       }
+      let lch = rowsOf(color.toSpace(Space.oklch));
+      let builder = new ListBuilder<Float64>();
+      for (var i = 0; i < color.length; i += 1) {
+        let mapped = mapRow(lch[i, 0], lch[i, 1], lch[i, 2], gamut);
+        builder.add(mapped.at(0));
+        builder.add(mapped.at(1));
+        builder.add(mapped.at(2));
+      }
+      convertRows(new Matrix(3, builder.toList()), gamut, space)
     }
 
 Rows converted to `space` and clamped in its gamut's RGB space, which is

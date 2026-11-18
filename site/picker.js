@@ -514,7 +514,7 @@ class ChromaritePicker extends HTMLElement {
    * Colors as CSS for the screen, fitted to what it can show.
    *
    * @param {Color} color
-   * @returns {string[]}
+   * @returns {readonly string[]}
    */
   #onScreen(color) {
     return color.toGamut(this.#screen).toCss();

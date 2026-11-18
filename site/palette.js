@@ -358,7 +358,7 @@ class ChromaritePalette extends HTMLElement {
    * Colors as CSS for this screen, fitted to what it can show.
    *
    * @param {Color} color
-   * @returns {string[]}
+   * @returns {readonly string[]}
    */
   #onScreen(color) {
     const screen = WIDE ? Space.displayP3 : Space.srgb;

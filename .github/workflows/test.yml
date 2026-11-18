@@ -1,5 +1,10 @@
 name: test
 
+# Chromarite's Temper tests on every backend, the tour in each language,
+# and the immutability check (demos/), with Temper's new compiler
+# (tempest, written in Rust). Also builds the project site (site/), and
+# publishes it to GitHub Pages from main.
+
 on:
   push:
     branches: [main]
@@ -9,54 +14,134 @@ on:
 permissions:
   contents: read
 
+env:
+  # Until the new compiler's switch lands, its nightly build (from
+  # temperlang/tempest's main) lags the fixes Chromarite relies on, so CI
+  # builds it from a pinned commit of its transition branch,
+  # rfc-657-transition. Once the switch lands, download Temper's
+  # nightly from temperlang/temper's releases instead, and drop the
+  # `temper` job's build.
+  TEMPEST_COMMIT: 5f3cf49801fcd5f125ea2175cc5cb993b630419b
+  DOTNET_CLI_TELEMETRY_OPTOUT: "1"
+
 jobs:
+  # The compiler, built once per pin, as an artifact for the other jobs.
+  temper:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      # Actions are pinned by commit, with the release in a comment.
+      # The binary, cached by commit, so it's built once per pin.
+      - id: cache
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ${{ runner.temp }}/temper-bin
+          key: tempest-${{ runner.os }}-${{ env.TEMPEST_COMMIT }}
+      - if: steps.cache.outputs.cache-hit != 'true'
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: temperlang/tempest
+          ref: ${{ env.TEMPEST_COMMIT }}
+          path: tempest
+          persist-credentials: false
+          # The whole history and its tags, from which the compiler names
+          # its version, as its releases are built.
+          fetch-depth: 0
+      # Tempest's minimum Rust, which its own CI builds with.
+      - if: steps.cache.outputs.cache-hit != 'true'
+        uses: dtolnay/rust-toolchain@cfcaf53ba4c621917ec7f78a66bff7a8848ddad4 # 1.85.0 branch, 2026-10-16
+      - if: steps.cache.outputs.cache-hit != 'true'
+        name: Build the compiler
+        working-directory: tempest
+        run: |
+          cargo build --locked --release -p tempest
+          mkdir -p "$RUNNER_TEMP/temper-bin"
+          cp target/release/temper "$RUNNER_TEMP/temper-bin/"
+      # Checkouts must be inside the workspace, but Temper builds every
+      # Temper file under it, so the compiler's sources must go before
+      # any job here builds.
+      - if: steps.cache.outputs.cache-hit != 'true'
+        run: rm -rf tempest
+      - run: '"$RUNNER_TEMP/temper-bin/temper" --version'
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: temper
+          path: ${{ runner.temp }}/temper-bin/temper
+          retention-days: 3
+
   test:
     name: test (${{ matrix.backend }})
-    runs-on: ubuntu-latest
+    needs: temper
+    # Pinned for Ubuntu's lua5.4, which is 5.4.6 on noble.
+    runs-on: ubuntu-24.04
     timeout-minutes: 30
     strategy:
       # Report every backend, even if one fails.
       fail-fast: false
       matrix:
-        backend: [cpp, csharp, java, js, lua, py, rust]
+        backend: [interp, cpp, csharp, java, js, lua, py, rust]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-
-      # Temper's nightly build of main, with its own JRE. The asset name
-      # includes the version, so match by pattern.
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: temper
+          path: ${{ runner.temp }}/temper-bin
       - name: Get Temper
-        env:
-          GH_TOKEN: ${{ github.token }}
         run: |
-          gh release download dev -R temperlang/temper -p '*-linux-x64.tgz' -O - | tar -xz -C "$RUNNER_TEMP"
-          echo "$RUNNER_TEMP"/temper-*-linux-x64 >> "$GITHUB_PATH"
+          chmod +x "$RUNNER_TEMP/temper-bin/temper"
+          echo "$RUNNER_TEMP/temper-bin" >> "$GITHUB_PATH"
 
-      # Toolchains per backend. Runners already have g++, cargo and Maven.
+      # Toolchains per backend, as Temper's own CI sets them up. Runners
+      # already have g++, CMake, cargo, and Maven.
       - if: matrix.backend == 'py'
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
         with:
           python-version: "3.11"
+      - if: matrix.backend == 'py'
+        uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
       - if: matrix.backend == 'js'
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: "24"
+      # Mocha runs the JS tests.
+      - if: matrix.backend == 'js'
+        run: npm install --global mocha@11.8.0
+      # JUnit, which the Java tests read from Maven's cache.
       - if: matrix.backend == 'java'
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@cf277c60eb25467037889841efdb72551f06f6c3 # v4.9.1
         with:
           distribution: temurin
           java-version: "21"
+      - if: matrix.backend == 'java'
+        run: |
+          mvn -q dependency:get -Dartifact=org.junit.jupiter:junit-jupiter-engine:5.9.2
+          mvn -q dependency:get -Dartifact=org.junit.platform:junit-platform-launcher:1.9.2
+      # Generated C# targets .NET 6, as Kotlin's projects do.
       - if: matrix.backend == 'csharp'
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9 # v4.3.1
         with:
-          dotnet-version: "8.0.x"
+          dotnet-version: "6.0.x"
+      # Lua 5.4.6, from Ubuntu's archive, as `lua`.
       - if: matrix.backend == 'lua'
         run: |
           sudo apt-get update -q
           sudo apt-get install -y -q lua5.4
-          command -v lua || sudo ln -s /usr/bin/lua5.4 /usr/local/bin/lua
+          sudo update-alternatives --set lua-interpreter /usr/bin/lua5.4
           lua -v
+      # libcurl's headers, for std's net in generated C++.
+      - if: matrix.backend == 'cpp'
+        run: |
+          dpkg -s libcurl4-openssl-dev >/dev/null 2>&1 ||
+            { sudo apt-get update -q && sudo apt-get install -y -q --no-install-recommends libcurl4-openssl-dev; }
+
+      # Rust's tests build offline, so the crates generated code needs go
+      # in cargo's cache first.
+      - if: matrix.backend == 'rust'
+        run: |
+          temper build -b rust
+          cargo fetch --manifest-path temper.out/rust/chromarite/Cargo.toml
 
       - name: Test
         run: temper test -b ${{ matrix.backend }}
@@ -64,12 +149,62 @@ jobs:
       # The tour in demos/ must print the same text in every language. Each
       # language's own tools build it against the output `temper test` left
       # in temper.out/.
-      - if: matrix.backend == 'py'
-        uses: astral-sh/setup-uv@v6
-      - name: Tour
+      - if: matrix.backend != 'interp'
+        name: Tour
         run: python3 demos/run.py ${{ matrix.backend }}
 
       # Chromarite's values must stay unchanged however each language tries,
       # except for the known leaks in demos/immutable/expected.txt.
-      - name: Immutability
+      - if: matrix.backend != 'interp'
+        name: Immutability
         run: python3 demos/immutable/run.py ${{ matrix.backend }}
+
+  # The project site, built with the same compiler, and published to
+  # GitHub Pages from main.
+  site:
+    needs: temper
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: temper
+          path: ${{ runner.temp }}/temper-bin
+      - name: Get Temper
+        run: |
+          chmod +x "$RUNNER_TEMP/temper-bin/temper"
+          echo "$RUNNER_TEMP/temper-bin" >> "$GITHUB_PATH"
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: "24"
+
+      - name: Build the site
+        run: |
+          temper build -b js -b rust
+          rustup target add wasm32-unknown-unknown
+          npm ci --prefix site
+          python3 site/build.py
+
+      - uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
+        with:
+          path: site/build
+
+  # Publishes only from main. Needs Settings > Pages > Source: GitHub
+  # Actions.
+  deploy:
+    if: github.ref == 'refs/heads/main'
+    needs: site
+    runs-on: ubuntu-24.04
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1

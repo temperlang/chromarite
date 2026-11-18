@@ -34,14 +34,14 @@ dependencies = [
 
 [[package]]
 name = "temper-core"
-version = "0.6.0"
+version = "0.7.0-alpha.0.243"
 dependencies = [
  "indexmap",
 ]
 
 [[package]]
 name = "temper-std"
-version = "0.6.0"
+version = "0.7.0-alpha.0.243"
 dependencies = [
  "temper-core",
 ]

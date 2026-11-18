@@ -117,9 +117,11 @@ Rust backend's compiled to wasm:
     uv run site/build.py
     python3 -m http.server --bind 127.0.0.1 -d site/build
 
-CI runs the tests and the tour on every backend for pull requests and pushes
-to `main`, using Temper's nightly `dev` build, and publishes the site from
-`main`. Source files in `src/` are literate Markdown, with tests next to the
+CI runs the tests on the interpreter and every backend, and the tour and
+the immutability check in every language, for pull requests and pushes to
+`main`, with Temper's new compiler built from a pinned commit
+(`TEMPEST_COMMIT` in `.github/workflows/test.yml`), and publishes the site
+from `main`. Source files in `src/` are literate Markdown, with tests next to the
 code they cover.
 
 [CssColor4]: https://www.w3.org/TR/css-color-4/
