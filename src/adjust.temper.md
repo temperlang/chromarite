@@ -206,7 +206,7 @@ Check both sides of every bracket in one try, widening any that miss.
           both.add(lch[i, 2]);
         }
       }
-      let checked = contrastRows(lightnessIn(new Matrix(3, both.toList()), sides.toList(), space), against2(against, n));
+      let checked = contrastRows(lightnessIn(new Matrix(3, both.toList()), sides.toList(), space), against2(against));
       for (var i = 0; i < n; i += 1) {
         if (lo[i] != hi[i]) {
           if (checked[i] >= ratio) { lo.set(i, clamp(lch[i, 0], 0.0, 1.0)) }
@@ -241,7 +241,7 @@ Check both sides of every bracket in one try, widening any that miss.
 
 `against` repeated for twice the rows, for checking both sides at once.
 
-    let against2(against: Color, n: Int): Color {
+    let against2(against: Color): Color {
       if (against.length == 1) {
         against
       } else {
