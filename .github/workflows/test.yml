@@ -1,9 +1,9 @@
 name: test
 
 # Chromarite's Temper tests on every backend, the tour in each language,
-# and the immutability check (demos/), with Temper's new compiler
-# (written in Rust). Also builds the project site (site/), and publishes
-# it to GitHub Pages from main.
+# and the immutability check (demos/), with Temper's compiler built from
+# source at the pinned TEMPEST_COMMIT. Also builds the project site
+# (site/), and publishes it to GitHub Pages from main.
 
 on:
   push:
