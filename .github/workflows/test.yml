@@ -15,13 +15,10 @@ permissions:
   contents: read
 
 env:
-  # Until the new compiler's switch lands, its nightly build (from
-  # temperlang/tempest's main) lags the fixes Chromarite relies on, so CI
-  # builds it from a pinned commit of its transition branch,
-  # rfc-657-transition. Once the switch lands, download Temper's
-  # nightly from temperlang/temper's releases instead, and drop the
-  # `temper` job's build.
-  TEMPEST_COMMIT: 5f3cf49801fcd5f125ea2175cc5cb993b630419b
+  # CI builds Temper's compiler (temperlang/temper) at a pinned commit, so
+  # a change in Temper never breaks this library unannounced; bump
+  # TEMPEST_COMMIT deliberately, with the library's tests passing.
+  TEMPEST_COMMIT: 709467bfd51234d1df388805ed4e358766a01b23
   DOTNET_CLI_TELEMETRY_OPTOUT: "1"
 
 jobs:
@@ -40,7 +37,7 @@ jobs:
       - if: steps.cache.outputs.cache-hit != 'true'
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          repository: temperlang/tempest
+          repository: temperlang/temper
           ref: ${{ env.TEMPEST_COMMIT }}
           path: tempest
           persist-credentials: false

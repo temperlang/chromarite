@@ -111,21 +111,12 @@ def main():
     (OUT / ".nojekyll").touch()
 
     bundle = OUT / "lib" / "chromarite.js"
-    # Temper's new compiler leaves test-only helpers (those taking a
-    # `Test`) in the library's JS, with an import of std's testing, which
-    # imports Node's `assert`; only their JSDoc names `Test`, so a stub
-    # stands in for it in the browser. Drop this once the compiler moves
-    # test-only code out, as Kotlin Temper did.
-    stub = OUT / "testing-stub.js"
-    stub.write_text("export class Test {}\n")
     esbuild(
         JS / "chromarite" / "index.js",
         "--bundle",
         f"--alias:@temperlang/core={JS / 'temper-core' / 'index.js'}",
-        f"--alias:@temperlang/std/testing={stub}",
         f"--outfile={bundle}",
     )
-    stub.unlink()
     expected = json.dumps((TOUR / "expected.txt").read_text())
     esbuild(
         SITE / "app.js",
